@@ -1,0 +1,22 @@
+# Compilados
+*.o
+*.out
+*.exe
+*.ptx
+*.cubin
+
+# Binários gerados
+karatsuba
+karatsuba_cuda
+
+# Python
+__pycache__/
+*.pyc
+.env/
+
+# VS Code / IDEs
+.vscode/
+.idea/
+
+# Resultados grandes (gráficos ficam em results/graphs/)
+results/graphs/*.png
