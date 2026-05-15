@@ -3,27 +3,11 @@
 #include <string>
 #include <algorithm>
 #include <thread>
-#include <chrono>
-#include <cstdlib>
 using namespace std;
 
 using BigNum = vector<int>;
 
-const int MAX_DEPTH  = 2;
-const int TIMEOUT_MS = 5 * 60 * 1000; // 5 minutos
-
-void watchdog(){
-    auto start = chrono::high_resolution_clock::now();
-    while(true){
-        this_thread::sleep_for(chrono::milliseconds(500));
-        double elapsed = chrono::duration<double, milli>(
-            chrono::high_resolution_clock::now() - start).count();
-        if(elapsed >= TIMEOUT_MS){
-            cerr << "\nTimeout: execucao interrompida apos 5 minutos.\n";
-            exit(1);
-        }
-    }
-}
+const int MAX_DEPTH = 4;
 
 BigNum fromString(const string& s){
     BigNum result(s.size());
@@ -141,8 +125,6 @@ BigNum karatsuba(const BigNum& x, const BigNum& y, int depth = 0){
 }
 
 int main(){
-    thread(watchdog).detach();
-
     string s1, s2;
     cout << "\n=== Karatsuba (CPU Threads) ===\n\n";
     cout << "Numero 1: "; cin >> s1;
@@ -151,10 +133,7 @@ int main(){
     BigNum x = fromString(s1);
     BigNum y = fromString(s2);
 
-    auto start = chrono::high_resolution_clock::now();
     string result = toString(karatsuba(x, y));
-    auto end = chrono::high_resolution_clock::now();
-    double ms = chrono::duration<double, milli>(end - start).count();
 
     int width = max({s1.size(), s2.size(), result.size()}) + 2;
 
@@ -162,8 +141,7 @@ int main(){
          << string(width - s1.size(), ' ') << s1 << "\n"
          << "x" << string(width - s2.size() - 1, ' ') << s2 << "\n"
          << string(width, '-') << "\n"
-         << string(width - result.size(), ' ') << result << "\n\n"
-         << "Tempo: " << ms << " ms (threads=" << (1 << MAX_DEPTH) << ")\n\n";
+         << string(width - result.size(), ' ') << result << "\n\n";
 
     return 0;
 }
