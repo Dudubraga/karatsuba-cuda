@@ -1,15 +1,16 @@
 import subprocess
 import os
 import re
+import time
 import matplotlib.pyplot as plt
-import matplotlib.ticker as ticker
 
-NUM1 = "1" + "2345678901" * 2000  # ~20001 dígitos
-NUM2 = "9" + "8765432109" * 2000  # ~20001 dígitos
+NUM1 = "1" + "2345678901" * 100000  # ~1.000.001 dígitos
+NUM2 = "9" + "8765432109" * 100000  # ~1.000.001 dígitos
 
 DEPTHS     = [0, 1, 2, 3, 4, 5, 6, 8, 10, 16]
 REPETICOES = 5
 
+# substitui MAX_DEPTH no .cpp, compila e apaga o temporário
 def compilar(depth):
     with open("../CUDA_X_Threads/karatsuba_threads.cpp", "r") as f:
         src = f.read()
@@ -21,26 +22,29 @@ def compilar(depth):
                     "_tmp_threads.cpp"], check=True)
     os.remove("_tmp_threads.cpp")
 
+# roda o executável com NUM1 e NUM2, retorna o tempo em ms
 def medir():
-    entrada  = f"{NUM1}\n{NUM2}\n"
-    resultado = subprocess.run(["./_tmp_threads"], input=entrada,
-                               capture_output=True, text=True, check=True)
-    match = re.search(r"Tempo:\s+([\d.]+)\s+ms", resultado.stdout)
-    return float(match.group(1)) if match else None
+    entrada = f"{NUM1}\n{NUM2}\n"
+    start   = time.perf_counter()
+    subprocess.run(["./_tmp_threads"], input=entrada,
+                   capture_output=True, text=True, check=True)
+    return (time.perf_counter() - start) * 1000
 
+# compila e mede cada depth, imprime tabela e retorna resultados para plotar
 def benchmark():
     resultados = []
     print(f"{'DEPTH':>6} | {'Threads':>10} | {'Tempo médio (ms)':>18}")
     print("=" * 45)
     for d in DEPTHS:
         compilar(d)
-        tempos = [medir() for _ in range(REPETICOES)]
-        media  = sum(x for x in tempos if x is not None) / len(tempos)
+        tempos  = [medir() for _ in range(REPETICOES)]
+        media   = sum(tempos) / len(tempos)
         threads = 1 << d
         resultados.append((d, threads, media))
         print(f"{d:>6} | {threads:>10,} | {media:>18.3f}")
     return resultados
 
+# gera e salva o gráfico de tempo por MAX_DEPTH em ../results/bench_max_depth.png
 def plotar(resultados):
     depths  = [r[0] for r in resultados]
     tempos  = [r[2] for r in resultados]
