@@ -4,19 +4,19 @@ import re
 import time
 import matplotlib.pyplot as plt
 
-NUM1 = "1" + "2345678901" * 100000  # ~1.000.001 dígitos
-NUM2 = "9" + "8765432109" * 100000  # ~1.000.001 dígitos
+NUM1 = "1" + "2345678901" * 10000  # 100.001 dígitos
+NUM2 = "9" + "8765432109" * 10000  # 100.001 dígitos
 
-DEPTHS     = [0, 1, 2, 3, 4, 5, 6, 8, 10, 16]
-REPETICOES = 5
+DEPTHS     = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 19]  # (threads = 2^depth)
+REPETICOES = 3
 
 # substitui MAX_DEPTH no .cpp, compila e apaga o temporário
 def compilar(depth):
-    with open("../CUDA_X_Threads/karatsuba_threads.cpp", "r") as f:
+    with open("../CUDA_X_Threads/karatsuba_threads.cpp", "r", encoding="utf-8") as f:
         src = f.read()
     src_mod = re.sub(r"const int MAX_DEPTH = \d+;",
                      f"const int MAX_DEPTH = {depth};", src)
-    with open("_tmp_threads.cpp", "w") as f:
+    with open("_tmp_threads.cpp", "w", encoding="utf-8") as f:
         f.write(src_mod)
     subprocess.run(["g++", "-O2", "-pthread", "-o", "_tmp_threads",
                     "_tmp_threads.cpp"], check=True)

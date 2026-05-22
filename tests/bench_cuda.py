@@ -12,13 +12,15 @@ REPETICOES     = 5
 
 # substitui THREADS_BLOCK no .cu, compila e apaga o temporário
 def compilar(tb):
-    with open("../cuda/karatsuba_cuda.cu", "r") as f:
+    with open("../CUDA_X_Threads/karatsuba_cuda.cu", "r", encoding="utf-8") as f:
         src = f.read()
     src_mod = re.sub(r"const int THREADS_BLOCK = \d+;",
                      f"const int THREADS_BLOCK = {tb};", src)
-    with open("_tmp_cuda.cu", "w") as f:
+    with open("_tmp_cuda.cu", "w", encoding="utf-8") as f:
         f.write(src_mod)
-    subprocess.run(["nvcc", "-O2", "-o", "_tmp_cuda", "_tmp_cuda.cu"], check=True)
+    vcvars = r"C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvars64.bat"
+    cmd = f'"{vcvars}" && nvcc -O2 -o _tmp_cuda _tmp_cuda.cu'
+    subprocess.run(cmd, shell=True, check=True)
     os.remove("_tmp_cuda.cu")
 
 # roda o executável com NUM1 e NUM2, retorna o tempo em ms
